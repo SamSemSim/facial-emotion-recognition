@@ -1,0 +1,27 @@
+# Virtual Environment
+emotion_env/
+venv/
+venv_torch/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Model files (optional, but recommended for large files)
+*.pth
+
+# IDE specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS specific files
+.DS_Store
+Thumbs.db 
