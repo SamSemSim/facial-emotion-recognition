@@ -84,68 +84,73 @@ test_transform = transforms.Compose([
     transforms.Normalize(mean=[0.5], std=[0.5])
 ])
 
-# Load datasets
-train_dataset = datasets.ImageFolder(
-    root='dataset/train',
-    transform=transform
-)
+def train_model():
+    # Load datasets
+    train_dataset = datasets.ImageFolder(
+        root='dataset/train',
+        transform=transform
+    )
 
-test_dataset = datasets.ImageFolder(
-    root='dataset/test',
-    transform=test_transform
-)
+    test_dataset = datasets.ImageFolder(
+        root='dataset/test',
+        transform=test_transform
+    )
 
-train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE)
+    train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE)
 
-# Initialize the model
-model = EmotionCNN().to(DEVICE)
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-5)
-scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.5, patience=5, verbose=True)
+    # Initialize model and training components
+    model = EmotionCNN().to(DEVICE)
+    criterion = nn.CrossEntropyLoss()
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', patience=5, verbose=True)
 
-# Training loop
-best_accuracy = 0.0
-for epoch in range(EPOCHS):
-    model.train()
-    running_loss = 0.0
-    for inputs, labels in train_loader:
-        inputs, labels = inputs.to(DEVICE), labels.to(DEVICE)
-        
-        optimizer.zero_grad()
-        outputs = model(inputs)
-        loss = criterion(outputs, labels)
-        loss.backward()
-        optimizer.step()
-        
-        running_loss += loss.item()
-    
-    # Print training statistics
-    print(f'Epoch {epoch+1}/{EPOCHS}')
-    print(f'Training Loss: {running_loss/len(train_loader):.4f}')
-    
-    # Validation
-    model.eval()
-    correct = 0
-    total = 0
-    with torch.no_grad():
-        for inputs, labels in test_loader:
+    # Training loop
+    best_loss = float('inf')
+    for epoch in range(EPOCHS):
+        model.train()
+        running_loss = 0.0
+        for inputs, labels in train_loader:
             inputs, labels = inputs.to(DEVICE), labels.to(DEVICE)
+            optimizer.zero_grad()
             outputs = model(inputs)
-            _, predicted = torch.max(outputs.data, 1)
-            total += labels.size(0)
-            correct += (predicted == labels).sum().item()
-    
-    accuracy = 100 * correct / total
-    print(f'Validation Accuracy: {accuracy:.2f}%\n')
-    
-    # Update learning rate based on validation accuracy
-    scheduler.step(accuracy)
-    
-    # Save best model
-    if accuracy > best_accuracy:
-        best_accuracy = accuracy
-        torch.save(model.state_dict(), 'best_emotion_model.pth')
-        print(f'New best model saved with accuracy: {best_accuracy:.2f}%\n')
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
+            running_loss += loss.item()
+        
+        # Validation
+        model.eval()
+        val_loss = 0.0
+        correct = 0
+        total = 0
+        with torch.no_grad():
+            for inputs, labels in test_loader:
+                inputs, labels = inputs.to(DEVICE), labels.to(DEVICE)
+                outputs = model(inputs)
+                loss = criterion(outputs, labels)
+                val_loss += loss.item()
+                _, predicted = torch.max(outputs.data, 1)
+                total += labels.size(0)
+                correct += (predicted == labels).sum().item()
+        
+        val_loss = val_loss / len(test_loader)
+        accuracy = 100 * correct / total
+        
+        print(f'Epoch {epoch+1}/{EPOCHS}')
+        print(f'Training Loss: {running_loss/len(train_loader):.4f}')
+        print(f'Validation Loss: {val_loss:.4f}')
+        print(f'Validation Accuracy: {accuracy:.2f}%')
+        print('-' * 60)
+        
+        # Learning rate scheduling
+        scheduler.step(val_loss)
+        
+        # Save best model
+        if val_loss < best_loss:
+            best_loss = val_loss
+            torch.save(model.state_dict(), 'best_emotion_model.pth')
+            print("Saved new best model")
 
-print(f"Training completed! Best validation accuracy: {best_accuracy:.2f}%") 
+if __name__ == '__main__':
+    train_model() 
