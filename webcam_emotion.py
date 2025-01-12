@@ -13,15 +13,18 @@ print(f"Python version: {sys.version}")
 print(f"OpenCV version: {cv2.__version__}")
 print(f"PyTorch version: {torch.__version__}")
 print(f"CUDA available: {torch.cuda.is_available()}")
+if torch.cuda.is_available():
+    print(f"CUDA device: {torch.cuda.get_device_name()}")
 
 # Load the trained model
 try:
     print("Initializing model...")
-    device = torch.device('cpu')
-    model = EmotionCNN()  # Fixed typo
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print(f"Using device: {device}")
+    model = EmotionCNN()
     print("Loading model weights...")
     try:
-        state_dict = torch.load('best_emotion_model.pth', map_location=device, weights_only=True)  # Added weights_only
+        state_dict = torch.load('best_emotion_model.pth', map_location=device)
         print("Model state loaded successfully")
     except Exception as e:
         print(f"Error loading model file: {str(e)}")
@@ -36,7 +39,7 @@ try:
         
     model = model.to(device)
     model.eval()  # Set to evaluation mode
-    print("Model loaded successfully")
+    print(f"Model loaded successfully and moved to {device}")
 except Exception as e:
     print(f"Error loading model: {str(e)}")
     print("Traceback:")
@@ -91,6 +94,9 @@ def preprocess_face(face):
         face_tensor = torch.from_numpy(face).float().unsqueeze(0).unsqueeze(0)
         face_tensor = face_tensor / 255.0  # Normalize to [0,1]
         face_tensor = (face_tensor - 0.5) / 0.5  # Normalize to [-1,1]
+        
+        # Move tensor to the same device as the model
+        face_tensor = face_tensor.to(device)
         return face_tensor
     except Exception as e:
         print(f"Error in preprocess_face: {str(e)}")
@@ -99,11 +105,11 @@ def preprocess_face(face):
 def detect_emotion(face_tensor):
     try:
         with torch.no_grad():
-            face_tensor = face_tensor.to(device)
+            # No need to move tensor to device here as it's already done in preprocess_face
             outputs = model(face_tensor)
             probabilities = torch.nn.functional.softmax(outputs, dim=1)
             
-            # Get probabilities for all emotions
+            # Move probabilities to CPU for numpy operations
             probs = probabilities[0].cpu().numpy()
             
             # Print all probabilities for debugging

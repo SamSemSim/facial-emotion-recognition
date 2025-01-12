@@ -9,7 +9,9 @@ A real-time facial emotion recognition system using PyTorch and OpenCV. The syst
 - Face detection using OpenCV
 - Support for 7 different emotions
 - Confidence scores for predictions
-- Model achieves ~68.7% validation accuracy
+- Model achieves ~70.27% validation accuracy
+- CUDA support for GPU acceleration
+- Debug window showing all emotion probabilities
 
 ## Overview
 
@@ -17,7 +19,9 @@ This project implements a facial emotion recognition system that:
 - Uses a deep learning model to detect emotions in real-time
 - Processes webcam feed to detect faces
 - Classifies emotions with confidence scores
-- Provides an easy-to-use interface
+- Provides an easy-to-use interface with debug information
+- Utilizes GPU acceleration when available
+- Implements smart emotion selection logic for better real-world performance
 
 ## Dataset Structure
 
@@ -61,13 +65,15 @@ The emotion recognition model uses a CNN with:
 - 4 Convolutional blocks with batch normalization
 - ReLU activation functions
 - Max pooling layers for feature reduction
-- Dropout layers for regularization
+- Dropout layers (0.5) for regularization
 - Fully connected layers for final classification
+- Smart post-processing for more stable predictions
 
 Specifications:
 - Input: 48x48 grayscale images
 - Output: 7 emotion classes
-- Training accuracy: 68.68%
+- Training accuracy: 70.27%
+- Uses data augmentation for better generalization
 
 ## Installation
 
@@ -77,9 +83,13 @@ git clone https://github.com/SamSemSim/facial-emotion-recognition.git
 cd facial-emotion-recognition
 ```
 
-2. Create a virtual environment (Python 3.10 recommended):
+2. Create a virtual environment (Python 3.10 required):
 ```bash
-python -m venv emotion_env
+# Windows
+py -3.10 -m venv emotion_env
+
+# Linux/Mac
+python3.10 -m venv emotion_env
 ```
 
 3. Activate the virtual environment:
@@ -91,10 +101,22 @@ python -m venv emotion_env
 source emotion_env/bin/activate
 ```
 
-4. Install dependencies:
+4. Install PyTorch with CUDA support (Windows):
+```bash
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+```
+
+5. Install other dependencies:
 ```bash
 pip install -r requirements.txt
 ```
+
+## Dataset Preparation
+
+1. Download one of the recommended datasets (e.g., FER2013)
+2. Create a `dataset` folder in the project root
+3. Organize images into train/test splits as shown in the structure above
+4. Ensure all images are in grayscale and 48x48 pixels
 
 ## Usage
 
@@ -106,9 +128,10 @@ python train_model.py
 
 The training script will:
 - Load the dataset from the `dataset` folder
-- Train for 250 epochs
+- Train for 100 epochs
 - Save the best model based on validation accuracy
 - Show training progress and metrics
+- Apply learning rate scheduling for better convergence
 
 ### Real-time Emotion Detection
 
@@ -116,30 +139,36 @@ The training script will:
 python webcam_emotion.py
 ```
 
-Controls:
+Features:
 - Press 'q' to quit the application
-- The application will show:
+- Main window shows:
   - Detected faces with bounding boxes
   - Predicted emotion
   - Confidence score
+- Debug window shows:
+  - Probabilities for all emotions
+  - Real-time updates
 
 ## Training Results
 
 The current model achieves:
-- Validation accuracy: 68.68%
-- Training completed in 250 epochs
+- Validation accuracy: 70.27%
+- Training completed in 100 epochs
 - Uses learning rate scheduling
-- Implements data augmentation for better generalization
+- Implements data augmentation
+- Smart post-processing for better real-world performance
 
 ## Requirements
 
 - Python 3.10
-- PyTorch
-- OpenCV
-- NumPy
-- Pillow
+- PyTorch 2.5.1 (with CUDA 11.8 support)
+- OpenCV 4.10.0
+- NumPy 1.26.3
+- Pillow 10.2.0
+- Matplotlib 3.10.0
+- CUDA Toolkit 11.8 (for GPU acceleration)
 
-See `requirements.txt` for specific versions.
+See `requirements.txt` for all dependencies.
 
 ## Contributing
 

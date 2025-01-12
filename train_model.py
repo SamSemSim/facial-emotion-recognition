@@ -9,7 +9,7 @@ import os
 IMG_HEIGHT = 48
 IMG_WIDTH = 48
 BATCH_SIZE = 32
-EPOCHS = 250
+EPOCHS = 100
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # Define the enhanced CNN model
@@ -106,7 +106,7 @@ def train_model():
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', patience=5, verbose=True)
 
     # Training loop
-    best_loss = float('inf')
+    best_accuracy = 0.0
     for epoch in range(EPOCHS):
         model.train()
         running_loss = 0.0
@@ -143,14 +143,14 @@ def train_model():
         print(f'Validation Accuracy: {accuracy:.2f}%')
         print('-' * 60)
         
-        # Learning rate scheduling
+        # Learning rate scheduling (still using validation loss for this)
         scheduler.step(val_loss)
         
-        # Save best model
-        if val_loss < best_loss:
-            best_loss = val_loss
+        # Save best model based on accuracy
+        if accuracy > best_accuracy:
+            best_accuracy = accuracy
             torch.save(model.state_dict(), 'best_emotion_model.pth')
-            print("Saved new best model")
+            print(f"Saved new best model with accuracy: {accuracy:.2f}%")
 
 if __name__ == '__main__':
     train_model() 

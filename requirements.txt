@@ -1,7 +1,15 @@
-torch==2.5.1
-torchvision==0.20.1
-opencv-python>=4.7.0
-numpy>=1.21.0
-pillow>=8.4.0
-tqdm>=4.65.0  # for progress bars
-matplotlib>=3.7.0  # for visualizations (optional) 
+# Deep Learning Framework
+torch==2.5.1+cu118
+torchvision==0.20.1+cu118
+torchaudio==2.5.1+cu118
+
+# Computer Vision and Image Processing
+opencv-python==4.10.0.84
+pillow==10.2.0
+
+# Scientific Computing and Data Processing
+numpy==1.26.3
+matplotlib==3.10.0
+
+# Progress Bars and Utilities
+tqdm==4.66.1 
