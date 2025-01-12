@@ -9,7 +9,7 @@ A real-time facial emotion recognition system using PyTorch and OpenCV. The syst
 - Face detection using OpenCV
 - Support for 7 different emotions
 - Confidence scores for predictions
-- Model achieves ~70.27% validation accuracy
+- Model achieves ~71.93% validation accuracy
 - CUDA support for GPU acceleration
 - Debug window showing all emotion probabilities
 
@@ -72,7 +72,7 @@ The emotion recognition model uses a CNN with:
 Specifications:
 - Input: 48x48 grayscale images
 - Output: 7 emotion classes
-- Training accuracy: 70.27%
+- Training accuracy: 71.93%
 - Uses data augmentation for better generalization
 
 ## Installation
@@ -152,7 +152,7 @@ Features:
 ## Training Results
 
 The current model achieves:
-- Validation accuracy: 70.27%
+- Validation accuracy: 71.93%
 - Training completed in 100 epochs
 - Uses learning rate scheduling
 - Implements data augmentation
